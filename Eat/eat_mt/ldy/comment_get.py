@@ -3,12 +3,6 @@ import requests
 import time
 import random
 import sys
-import re
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import jieba as jb
-import jieba.analyse
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -34,22 +28,21 @@ cookie = {
     '__jdu':'1798292710'
 }
 
-url1 = "https://club.jd.com/comment/productPageComments.action?callback=fetchJSON_comment98vv104&productId=3219817&score=0&sortType=5&page="
-url2 = "&pageSize=10&isShadowSku=0"
+url1 = "http://i.meituan.com/deal/27338824/feedback/page_"
 
-ran_num = random.sample(range(6), 6)   #乱序输出0-80数字（页码）
+ran_num = random.sample(range(489), 489)
 
 for i in ran_num:
     a = ran_num[0]
     if i == a:
         i = str(i)
-        url = (url1 + i + url2)
+        url = (url1 + i)
         r = requests.get(url = url,headers = headers,cookies=cookie)
         # r = requests.get(url=url, headers=headers, cookies=cookie)
         html = r.content
     else:
         i = str(i)
-        url = (url1 + i + url2)
+        url = (url1 + i)
         r = requests.get(url=url, headers=headers,cookies=cookie)
         html2 = r.content
         html = html + html2
@@ -58,8 +51,7 @@ for i in ran_num:
 
 html = str(html)
 
-file = open("D:\\page.txt", "w")
+file = open("D:\\ldy.txt", "w")
 file.write(html)
 
 file.close()
-
