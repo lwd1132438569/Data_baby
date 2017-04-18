@@ -28,9 +28,9 @@ cookie = {
     '__jdu':'1798292710'
 }
 
-url1 = "http://i.meituan.com/deal/6374048/feedback/page_"
+url1 = "http://i.meituan.com/poi/6374048/feedbacks/page_"
 
-ran_num = random.sample(range(489), 489)
+ran_num = random.sample(range(214), 214)
 
 for i in ran_num:
     a = ran_num[0]
@@ -51,7 +51,7 @@ for i in ran_num:
 
 html = str(html)
 
-file = open("D:\\ldy.txt", "w")
+file = open("D:\\yts.txt", "w")
 file.write(html)
 
 file.close()
