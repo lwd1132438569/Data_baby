@@ -11,9 +11,9 @@ comments_list = comments['评论'].tolist()
 res_list = []
 
 for line in comments_list:
-    line_cut = jieba.cut_for_search(line)
+    line_cut = jieba.cut(line,cut_all=False)
     # line_cut = jieba.analyse.extract_tags(line, topK=3)
-    print "Full Mode: " + ",".join(line_cut)
+    # print "Full Mode: " + ",".join(line_cut)
     # res_list.append(jieba.cut(l,cut_all=True))
 
 # for l in comments['评论'].tolist():
