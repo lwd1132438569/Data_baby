@@ -3,9 +3,10 @@ import requests
 import time
 import random
 import sys
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
+# from imp import reload
+#
+# reload(sys)
+# sys.setdefaultencoding('utf-8')
 
 headers = {
     'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
@@ -28,9 +29,9 @@ cookie = {
     '__jdu':'1798292710'
 }
 
-url1 = "http://i.meituan.com/deal/27338824/feedback/page_"
+url1 = "https://i.meituan.com/poi/1149818/feedbacks/page_"
 
-ran_num = random.sample(range(489), 489)
+ran_num = random.sample(range(407), 407)  #407
 
 for i in ran_num:
     a = ran_num[0]
@@ -49,9 +50,9 @@ for i in ran_num:
         time.sleep(5)
         print("当前抓取页面" + url + "状态" + str(r))
 
-html = str(html)
+html = str(html,encoding='utf-8')
 
-file = open("D:\\ldy.txt", "w")
+file = open("D:\\zxm.txt", "w", encoding='utf-8')
 file.write(html)
 
 file.close()

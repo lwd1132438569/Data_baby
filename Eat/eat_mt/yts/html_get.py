@@ -3,9 +3,10 @@ import requests
 import time
 import random
 import sys
-
-reload(sys)
-sys.setdefaultencoding('utf-8')
+# from imp import reload
+#
+# reload(sys)
+# sys.setdefaultencoding('utf-8')
 
 headers = {
     'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
@@ -47,7 +48,7 @@ for i in ran_num:
         html2 = r.content
         html = html + html2
         time.sleep(5)
-        print "当前抓取页面" + url + "状态" + str(r)
+        print("当前抓取页面" + url + "状态" + str(r))
 
 html = str(html)
 
