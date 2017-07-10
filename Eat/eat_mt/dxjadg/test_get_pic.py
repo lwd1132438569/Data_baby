@@ -2,6 +2,7 @@
 
 import re
 import pandas as pd
+import urllib
 from bs4 import BeautifulSoup
 
 def do_res(res):
@@ -29,7 +30,7 @@ def do_res_pics(res):
     for it in res:
         it = str(it)
         soup = BeautifulSoup(it)
-        res_mid = soup.find('data-src=".*"')
+        res_mid = soup.find("span")['data-src']
         res_final.append(res_mid)
 
     return res_final
@@ -46,7 +47,16 @@ username = do_res_user(res_usr)
 comment = do_res(res_com)
 pics = do_res_pics(res_pic)
 
-print(pics)
+# r1 = str(pics[0])
+# r2 = 'http://' + r1[2:]
+# urllib.request.urlretrieve(r2,'D://1.jpg')
+i = 0
+for p in pics:
+    p1 = str(p)
+    p2 = 'http://' + p1[2:]
+    urllib.request.urlretrieve(p2, 'D://dxjadg_pics//%s.jpg'%i)
+    i = i+1
+
 
 # res_table = pd.DataFrame({'用户':username,'评论':comment})
 # res_table.to_csv("D:\\dxjadg_res.csv",encoding="utf_8_sig")
