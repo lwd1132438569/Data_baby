@@ -7,10 +7,11 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D
+from keras.utils import plot_model
 
 batch_size = 32
 num_classes = 10
-epochs = 200
+epochs = 5   #origial is 200
 data_augmentation = True
 
 # 数据载入
@@ -66,6 +67,8 @@ if not data_augmentation:
               epochs=epochs,
               validation_data=(x_test, y_test),
               shuffle=True)
+    # 模型可视化
+    plot_model(model, to_file='model.png')
 else:
     print('Using real-time data augmentation.')
     # This will do preprocessing and realtime data augmentation:
@@ -92,3 +95,5 @@ else:
                         steps_per_epoch=x_train.shape[0] // batch_size,
                         epochs=epochs,
                         validation_data=(x_test, y_test))
+    # 模型可视化
+    plot_model(model, to_file='model.png')
