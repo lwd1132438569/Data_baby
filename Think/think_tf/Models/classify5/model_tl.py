@@ -7,56 +7,56 @@ from tensorlayer.visualize import read_images
 sess = tf.InteractiveSession()
 
 # prepare data
-X_train, y_train = read_images(['320.jpg','321.jpg'], path='C:\dataSet\\re\\train\\bus')
-# X_test, y_test = read_images(path='C:\dataSet\\re\\test')
+X_train = read_images(['320.jpg','321.jpg'], path='C:\dataSet\\re\\train\\bus')
+y_train = ['bus','dinosaurs']
+X_test, y_test = read_images(['300.jpg','301.jpg'], path='C:\dataSet\\re\\test\\bus')
 
-print(X_train)
+print(y_train)
 # # define placeholder
-# x = tf.placeholder(tf.float32, shape=[None, 784], name='x')
-# y_ = tf.placeholder(tf.int64, shape=[None, ], name='y_')
+x = tf.placeholder(tf.float32, shape=[None, 784], name='x')
+y_ = tf.placeholder(tf.int64, shape=[None, ], name='y_')
+
+# define the network
+network = tl.layers.InputLayer(x, name='input_layer')
+network = tl.layers.DropoutLayer(network, keep=0.8, name='drop1')
+network = tl.layers.DenseLayer(network, n_units=800,
+                                act = tf.nn.relu, name='relu1')
+network = tl.layers.DropoutLayer(network, keep=0.5, name='drop2')
+network = tl.layers.DenseLayer(network, n_units=800,
+                                act = tf.nn.relu, name='relu2')
+network = tl.layers.DropoutLayer(network, keep=0.5, name='drop3')
+# the softmax is implemented internally in tl.cost.cross_entropy(y, y_, 'cost') to
+# speed up computation, so we use identity here.
+# see tf.nn.sparse_softmax_cross_entropy_with_logits()
+network = tl.layers.DenseLayer(network, n_units=10,
+                                act = tf.identity,
+                                name='output_layer')
+# define cost function and metric.
+y = network.outputs
+cost = tl.cost.cross_entropy(y, y_, 'cost')
+correct_prediction = tf.equal(tf.argmax(y, 1), y_)    #argmax按行或按列计算最大值，0表示列，1表示行
+acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+y_op = tf.argmax(tf.nn.softmax(y), 1)
+
+# define the optimizer
+train_params = network.all_params
+train_op = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=0.9, beta2=0.999,
+                            epsilon=1e-08, use_locking=False).minimize(cost, var_list=train_params)
+
+# initialize all variables in the session
+tl.layers.initialize_global_variables(sess)
+
+# print network information
+network.print_params()
+network.print_layers()
 #
-# # define the network
-# network = tl.layers.InputLayer(x, name='input_layer')
-# network = tl.layers.DropoutLayer(network, keep=0.8, name='drop1')
-# network = tl.layers.DenseLayer(network, n_units=800,
-#                                 act = tf.nn.relu, name='relu1')
-# network = tl.layers.DropoutLayer(network, keep=0.5, name='drop2')
-# network = tl.layers.DenseLayer(network, n_units=800,
-#                                 act = tf.nn.relu, name='relu2')
-# network = tl.layers.DropoutLayer(network, keep=0.5, name='drop3')
-# # the softmax is implemented internally in tl.cost.cross_entropy(y, y_, 'cost') to
-# # speed up computation, so we use identity here.
-# # see tf.nn.sparse_softmax_cross_entropy_with_logits()
-# network = tl.layers.DenseLayer(network, n_units=10,
-#                                 act = tf.identity,
-#                                 name='output_layer')
-# # define cost function and metric.
-# y = network.outputs
-# cost = tl.cost.cross_entropy(y, y_, 'cost')
-# correct_prediction = tf.equal(tf.argmax(y, 1), y_)    #argmax按行或按列计算最大值，0表示列，1表示行
-# acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-# y_op = tf.argmax(tf.nn.softmax(y), 1)
+# train the network
+tl.utils.fit(sess, network, train_op, cost, X_train, y_train, x, y_,
+            acc=acc, batch_size=500, n_epoch=500, print_freq=5, eval_train=False)
 #
-# # define the optimizer
-# train_params = network.all_params
-# train_op = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=0.9, beta2=0.999,
-#                             epsilon=1e-08, use_locking=False).minimize(cost, var_list=train_params)
-#
-# # initialize all variables in the session
-# tl.layers.initialize_global_variables(sess)
-#
-# # print network information
-# network.print_params()
-# network.print_layers()
-#
-# # train the network
-# tl.utils.fit(sess, network, train_op, cost, X_train, y_train, x, y_,
-#             acc=acc, batch_size=500, n_epoch=500, print_freq=5,
-#             X_val=X_val, y_val=y_val, eval_train=False)
-#
-# # evaluation
-# tl.utils.test(sess, network, acc, X_test, y_test, x, y_, batch_size=None, cost=cost)
-#
+# evaluation
+tl.utils.test(sess, network, acc, X_test, y_test, x, y_, batch_size=None, cost=cost)
+
 # # save the network to .npz file
 # tl.files.save_npz(network.all_params , name='model.npz')
 sess.close()

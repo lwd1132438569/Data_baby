@@ -1,0 +1,5 @@
+dinosaurs
+bus
+elephants
+flowers
+horse
