@@ -13,38 +13,43 @@ from joblib import Parallel, delayed
 # label_file = 'E:\Dev\dataSet\SpeechRecognition\Chinese\doc\\trans\\train.word.lite.txt'
 
 # 训练样本路径
-wav_path = 'E:\Dev\dataSet\SpeechRecognition\Chinese\wav\\train'
-label_file = 'E:\Dev\dataSet\SpeechRecognition\Chinese\doc\\trans\\train.word.txt'
+wav_path = 'E:\\Dev\\dataSet\\google_test\\wav\\train'
+# label_file = 'E:\Dev\dataSet\SpeechRecognition\Chinese\doc\\trans\\train.word.txt'
 
 def get_wav_files(wav_path = wav_path):
     wav_files = []
     for (dirpath, dirnames, filenames) in os.walk(wav_path):
         for filename in filenames:
             if filename.endswith(".wav") or filename.endswith(".WAV"):
+                # print([dirpath, filename]) 打印出形如:['E:\\Dev\\dataSet\\google_test\\wav\\train\\one', 'fd395b74_nohash_2.wav']
                 filename_path = os.sep.join([dirpath, filename])
-                if os.stat(filename_path).st_size < 240000:     # st_size以字节为单位，240000字节(b)=234.375千字节(kb)
-                    continue                                    # 这里逻辑为忽略太小的音频文件
+                # print(filename_path)  example: E:\Dev\dataSet\google_test\wav\train\no\f8ad3941_nohash_0.wav
+                # if os.stat(filename_path).st_size < 240000:     # st_size以字节为单位，240000字节(b)=234.375千字节(kb)
+                #     continue                                    # 这里逻辑为忽略太小的音频文件
                 wav_files.append(filename_path)
 
     return wav_files
 
 wav_files = get_wav_files()
 
-def get_wav_label(wav_files = wav_files, label_file = label_file):
-    labels_dict = {}
-    with open(label_file, "r", encoding='utf-8') as f:
-        for label in f:
-            label = label.strip("\n")
-            label_id, label_text = label.split(' ', 1)
-            labels_dict[label_id] = label_text
+def get_wav_label(wav_files = wav_files):
+    # labels_dict = {}
+    # with open(label_file, "r", encoding='utf-8') as f:
+    #     for label in f:
+    #         label = label.strip("\n")
+    #         label_id, label_text = label.split(' ', 1)
+    #         labels_dict[label_id] = label_text
 
     labels = []
     new_wav_files = []
     for wav_file in wav_files:
-        wav_id = os.path.basename(wav_file).split(".")[0]  # 返回路径后面的文件名，str类型，再用split()处理获取没后缀类型的文件名
-        if wav_id in labels_dict:
-            labels.append(labels_dict[wav_id])
-            new_wav_files.append(wav_file)
+        # print(wav_file) # E:\Dev\dataSet\google_test\wav\train\one\ffd2ba2f_nohash_0.wav
+        label = str(wav_file).split("\\")[-2]
+        # wav_id = os.path.basename(wav_file).split(".")[0]  # 返回路径后面的文件名，str类型，再用split()处理获取没后缀类型的文件名
+        # print(wav_id)
+        # if wav_id in labels_dict:
+        labels.append(label)
+        new_wav_files.append(wav_file)
 
     return new_wav_files, labels
 
@@ -246,7 +251,7 @@ def train_speech_to_text_network(wav_max_len):
             writer = tf.summary.FileWriter('my_graph', graph=sess.graph)
             writer.close()
             if epoch % 5 == 0:
-                saver.save(sess, 'C:\\Users\\sdzn\\PycharmProjects\\Data_baby\\Listen\\listen_tf\\demo\\model', global_step=epoch)
+                saver.save(sess, 'C:\\Users\\sdzn\\PycharmProjects\\Data_baby\\Listen\\listen_tf\\demo_en\\model', global_step=epoch)
 
 # 训练
 # train_speech_to_text_network(wav_max_len)
@@ -269,9 +274,9 @@ def speech_to_text(wav_file):
         predict = tf.sparse_to_dense(decoded[0].indices, decoded[0].dense_shape, decoded[0].values) + 1
         output = sess.run(decoded, feed_dict={X: mfcc})
         print(output)
-        # print('******************')
+        print('******************')
         # print(predict)
-        msg = ''.join([words[n] for n in output[0][1]])
+        msg = ' '.join([words[n] for n in output[0][1]])
         print(msg)
 
 if __name__ == "__main__":
@@ -282,12 +287,13 @@ if __name__ == "__main__":
     all_words = []
     for label in labels:
         # 字符分解
-        all_words += [word for word in label]
-
-    counter = Counter(all_words)
+        all_words.append(label)
+    # print(all_words) 这里all_words列表里有重复
+    counter = Counter(all_words)  # 利用Counter类去重
     count_pairs = sorted(counter.items(), key=lambda x: -x[1])
 
     words, _ = zip(*count_pairs)
+    # print(words)
     words_size = len(words)
     print(u"词汇表大小：", words_size)
 
@@ -312,8 +318,8 @@ if __name__ == "__main__":
     print("最长的语音", wav_max_len)
 
     batch_size = 1
-    n_batch = len(wav_files) // batch_size
-
+    # n_batch = len(wav_files) // batch_size
+    n_batch = 200
     X = tf.placeholder(dtype=tf.float32, shape=[batch_size, None, 20])
 
     # 实际mfcc中的元素并非同号，不严格的情况下如此得到序列长度也是可行的
@@ -323,5 +329,5 @@ if __name__ == "__main__":
 
     # train_speech_to_text_network(wav_max_len)
 
-    # speech_to_text(wav_file='E:\\Dev\\dataSet\\SpeechRecognition\\Chinese\\wav\\train_lite\\A11_0.WAV')
-    speech_to_text(wav_file='E:\\Dev\\dataSet\\SpeechRecognition\\Chinese\\wav\\train\\A2\\A2_0.wav')
+    speech_to_text(wav_file='E:\\Dev\\dataSet\\google_test\\wav\\validation\\dog\\00f0204f_nohash_1.wav')
+    # speech_to_text(wav_file='E:\\Dev\\dataSet\\SpeechRecognition\\Chinese\\wav\\train\\A2\\A2_0.wav')
