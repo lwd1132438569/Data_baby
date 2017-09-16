@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #!/usr/local/bin/python
 """Utilities for downloading and providing data from openslr.org, libriSpeech, Pannous, Gutenberg, WMT, tokenizing, vocabularies."""
-# TODO! see https://github.com/pannous/caffe-speech-recognition for some data sources
+#  see https://github.com/pannous/caffe-speech-recognition for some data sources
 
 import os
 import re
@@ -40,7 +40,7 @@ class Source:  # labels
 	DIGIT_SPECTROS = 'spoken_numbers_spectros_64x64.tar'  # 64x64  baby data set, works astonishingly well
 	NUMBER_WAVES = 'spoken_numbers_wav.tar'
 	NUMBER_IMAGES = 'spoken_numbers.tar'  # width=256 height=256
-	WORD_SPECTROS = 'https://dl.dropboxusercontent.com/u/23615316/spoken_words.tar'  # width,height=512# todo: sliding window!
+	WORD_SPECTROS = 'https://dl.dropboxusercontent.com/u/23615316/spoken_words.tar'  # width,height=512# sliding window!
 	WORD_WAVES = 'spoken_words_wav.tar'
 	TEST_INDEX = 'test_index.txt'
 	TRAIN_INDEX = 'train_index.txt'
@@ -195,7 +195,7 @@ def spectro_batch_generator(batch_size=10,width=64,source_data=Source.DIGIT_SPEC
 	if target==Target.digits: num_classes=10
 	if target==Target.first_letter: num_classes=32
 	files = os.listdir(path)
-	# shuffle(files) # todo : split test_fraction batch here!
+	# shuffle(files) # split test_fraction batch here!
 	# files=files[0:int(len(files)*(1-test_fraction))]
 	print("Got %d source data files from %s"%(len(files),path))
 	while True:

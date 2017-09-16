@@ -18,7 +18,8 @@ from numpy import array
 # Training Step: 544  | total loss: 0.15866
 # | Adam | epoch: 034 | loss: 0.15866 - acc: 0.9818 -- iter: 0000/1000
 # 训练样本路径
-wav_path = 'E:\\Dev\\dataSet\\google_test\\wav\\train'
+# wav_path = 'E:\\Dev\\dataSet\\google_test\\wav\\train'
+wav_path = 'E:\\Dev\\dataSet\\google_test\\wav\\train_lite'
 # label_file = 'E:\Dev\dataSet\SpeechRecognition\Chinese\doc\\trans\\train.word.txt'
 
 def get_wav_files(wav_path = wav_path):
@@ -81,7 +82,11 @@ def get_next_batches(batch_size, wav_max_len):
     #     pointer += 1
     for i in range(batch_size):
         res = speech_data.load_wav_file(wav_files[pointer])
+        # print(res)
         batches_wavs.append(res)
+        pointer += 1
+    # print(len(wav_files))
+    # exit()
     # 取零补齐
     # label append 0 , 0 对应的字符
     # mfcc 默认的计算长度为 20(n_mfcc of mfcc) 作为channel length
@@ -91,24 +96,36 @@ def get_next_batches(batch_size, wav_max_len):
     for label in batches_labels:
         while len(label) < label_max_len:
             label.append(0)
-    # return batches_wavs,
+    # return batches_wavs,batches_labels
+    # print(batches_wavs)
+    # print(len(batches_wavs[0]))
+    # exit()
     return batches_wavs
 # softmax 结果概率模型转化为对应单词
-def res_to_text(result):
+def res_to_text(result):   # 2.0 版本 修改了模型输出的概率分布和单词序号对应不上的问题
     mid = result[0].tolist()
-    # print(len(mid))
+    # print(len(mid)) # 18
+    print(mid)
     # exit()
     max_probility_index = mid.index(max(mid)) # 返回最大概率的索引
-    key_list = word_num_map.keys()
-    res = list(key_list)
-    max_probility = res[max_probility_index]
+    for key in word_num_map:
+        if word_num_map[key] == max_probility_index :
+            max_probility = key
+            break
+    # key_list = word_num_map.keys()
+    # print(max_probility_index)
+    # res = list(key_list)
+    # max_probility = res[max_probility_index]
+    # print(res)
+    # print(max_probility)
+    # exit()
     # max_probility = word_num_map.get(max_probility_index)
     return max_probility
 
 batch = speech_data.wave_batch_generator(10000,target=speech_data.Target.digits)
 # X,Y = get_wav_files()
 wav_files, labels = get_wav_label()
-batch_size = 1
+batch_size = len(wav_files)
 
 all_words = []
 for label in labels:
@@ -137,17 +154,17 @@ to_num = lambda word: word_num_map.get(word, len(words))   # 返回指定单词�
 # 将单个file的标签映射为num 返回对应list,最终all file组成嵌套list
 labels_vector = [list(map(to_num, label)) for label in labels]
 label_list = []
+# print(labels)
 for label in labels:
-
     label_every = [0]
-    label_every = label_every*18
+    label_every = label_every*4
     mid = word_num_map.get(label, len(words))
     label_every[mid] = 1
     # print(label)
     # print(label_every)
     # exit()
     label_list.append(label_every)
-# print(labels)
+
 # print(label)
 # print(labels_vector)
 # print(label_list)
@@ -170,10 +187,14 @@ n_batch = 200
 
 X = get_next_batches(batch_size,wav_max_len)
 Y = label_list
+# print(X)
+# print('*****************')
 # print(len(X))
+# print(len(Y))
+# print(Y)
 # exit()
 # X = array(X).reshape(1,1,673,20)
-number_classes = 18 # simple words
+number_classes = 4 # simple words
 # X = tf.placeholder(dtype=tf.float32, shape=[batch_size, wav_max_len, 20])
 # Y = tf.placeholder(dtype=tf.int32, shape=[batch_size, wav_max_len])
 #
@@ -186,20 +207,21 @@ tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.5)
 # net = tflearn.input_data(shape = [batch_size, wav_max_len, 20])
 net = tflearn.input_data(shape=[None, 8192])
 net = tflearn.fully_connected(net, 64)
-net = tflearn.dropout(net, 0.5)
+net = tflearn.dropout(net, 0.8)
 # net = tflearn.lstm(net, 128, dropout=0.8)
 net = tflearn.fully_connected(net, number_classes, activation='softmax')
-net = tflearn.regression(net, optimizer='adam', loss='categorical_crossentropy')
+net = tflearn.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
 
-model = tflearn.DNN(net)
-model.fit(X, Y, n_epoch=3, show_metric=True, snapshot_step=100)
+model = tflearn.DNN(net, tensorboard_verbose=3, tensorboard_dir='logs')  # 可视化需要tensorboard_verbose和tensorboard_dir两个参数
+model.fit(X, Y, n_epoch=5, show_metric=True, snapshot_step=100)
 # Overfitting okay for now
 
 
 # demo_file = "5_Vicki_260.wav"
-demo_file = "E:\\Dev\\dataSet\\google_test\\wav\\validation\\bed\\00f0204f_nohash_0.wav"
+# demo_file = "E:\\Dev\\dataSet\\google_test\\wav\\validation\\bed\\00f0204f_nohash_0.wav"
+demo_file = "E:\\Dev\\dataSet\\google_test\\wav\\validation\\dog\\00b01445_nohash_0.wav"
 demo = speech_data.load_wav_file(demo_file)
 result = model.predict([demo]) # Cannot feed value of shape (1, 8192) for Tensor 'InputData/X:0', which has shape '(?, 1, 673, 20)'
 # print(type(result[0][17]))
 print("predicted digit for %s : result = %s "%(demo_file,res_to_text(result)))
-# print("predicted digit for %s : result = %s "%(demo_file,result))
+print("predicted digit for %s : result = %s "%(demo_file,result))
