@@ -180,6 +180,9 @@ def load_wav_file(name):
 	chunk = chunk[0:CHUNK * 2]  # should be enough for now -> cut
 	chunk.extend(numpy.zeros(CHUNK * 2 - len(chunk)))  # fill with padding 0's
 	# print("%s loaded"%name)
+	# print('***************************')
+	# print(len(chunk))
+	# exit()
 	return chunk
 
 

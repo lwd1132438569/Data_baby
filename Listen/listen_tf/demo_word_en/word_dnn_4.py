@@ -224,8 +224,9 @@ net = tflearn.dropout(net, 0.8)
 net = tflearn.fully_connected(net, number_classes, activation='softmax')
 net = tflearn.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
 
-model = tflearn.DNN(net, tensorboard_verbose=3, tensorboard_dir='logs')  # 可视化需要tensorboard_verbose和tensorboard_dir两个参数
-model.fit(X, Y, n_epoch=5, show_metric=True, snapshot_step=100)
+model = tflearn.DNN(net, tensorboard_verbose=3, tensorboard_dir='logs_4')  # 可视化需要tensorboard_verbose和tensorboard_dir两个参数
+model.fit(X, Y, n_epoch=3, show_metric=True, snapshot_step=100)
+model.save('Models_4/word_dnn_4.tflearn')
 # Overfitting okay for now
 
 

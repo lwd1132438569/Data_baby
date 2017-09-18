@@ -19,7 +19,7 @@ from numpy import array
 # | Adam | epoch: 034 | loss: 0.15866 - acc: 0.9818 -- iter: 0000/1000
 # 训练样本路径
 # wav_path = 'E:\\Dev\\dataSet\\words\\wav\\train'
-wav_path = 'E:\\Dev\\dataSet\\words\\wav\\train_lite'
+wav_path = 'E:\\Dev\\dataSet\\words\\wav\\train'
 # label_file = 'E:\Dev\dataSet\SpeechRecognition\Chinese\doc\\trans\\train.word.txt'
 
 def get_wav_files(wav_path = wav_path):
@@ -169,7 +169,7 @@ label_list = []
 # print(labels)
 for label in labels:
     label_every = [0]
-    label_every = label_every*4
+    label_every = label_every*18    #  有几个分类这里写几
     mid = word_num_map.get(label, len(words))
     label_every[mid] = 1
     # print(label)
@@ -206,7 +206,7 @@ Y = label_list
 # print(Y)
 # exit()
 # X = array(X).reshape(1,1,673,20)
-number_classes = 4 # simple words
+number_classes = 18 # simple words
 # X = tf.placeholder(dtype=tf.float32, shape=[batch_size, wav_max_len, 20])
 # Y = tf.placeholder(dtype=tf.int32, shape=[batch_size, wav_max_len])
 #
@@ -225,9 +225,9 @@ net = tflearn.fully_connected(net, number_classes, activation='softmax')
 net = tflearn.regression(net, optimizer='adam', learning_rate=0.0001, loss='categorical_crossentropy')
 
 model = tflearn.DNN(net, tensorboard_verbose=3, tensorboard_dir='logs')  # 可视化需要tensorboard_verbose和tensorboard_dir两个参数
-model.fit(X, Y, n_epoch=5, show_metric=True, snapshot_step=100)
+model.fit(X, Y, n_epoch=10, show_metric=True, snapshot_step=100)
 # Overfitting okay for now
-
+model.save('Models/word_dnn_18.tflearn')
 
 # demo_file = "5_Vicki_260.wav"
 # demo_file = "E:\\Dev\\dataSet\\words\\wav\\validation\\bed\\00f0204f_nohash_0.wav"

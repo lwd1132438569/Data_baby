@@ -70,6 +70,12 @@ def get_wav_length(wav):
     mfcc = np.transpose(librosa.feature.mfcc(wav, sr), [1, 0])
     return len(mfcc)
 
+def load_wav_feature_mfcc(wav_files):
+    wav, sr = librosa.load(wav_files)
+    mfcc = np.transpose(np.expand_dims(librosa.feature.mfcc(wav, sr), axis=0), [0, 2, 1])
+    res = mfcc.tolist()
+    return res
+
 pointer = 0
 def get_next_batches(batch_size, wav_max_len):
     global pointer
@@ -82,8 +88,18 @@ def get_next_batches(batch_size, wav_max_len):
     #     batches_labels.append(labels_vector[pointer])  # pointer = 0 labels_vector[0]开始遍历
     #     pointer += 1
     for i in range(batch_size):
-        res = speech_data.load_wav_file(wav_files[pointer])
-        batches_wavs.append(res)
+        # res = speech_data.load_wav_file(wav_files[pointer])  # load_wav_file 返回值为len()值8192的一个列表
+        wav, sr = librosa.load(wav_files[pointer])  # pointer = 0 从wav_files[0]开始遍历
+        mfcc = np.transpose(librosa.feature.mfcc(wav, sr), [1,0])
+        batches_wavs.append(mfcc.tolist())
+        # print(len(mfcc.tolist()))  # 44
+        # exit()
+        # res_list = []
+        # for i in range(len(res)):
+        #     res_list.append(res[i])
+        pointer += 1
+    # print(len(wav_files))
+    # exit()
     # 取零补齐
     # label append 0 , 0 对应的字符
     # mfcc 默认的计算长度为 20(n_mfcc of mfcc) 作为channel length
@@ -94,6 +110,9 @@ def get_next_batches(batch_size, wav_max_len):
         while len(label) < label_max_len:
             label.append(0)
     # return batches_wavs,batches_labels
+    # print(batches_wavs)
+    # print(len(batches_wavs[0]))
+    # exit()
     return batches_wavs
 
 # softmax 结果概率模型转化为对应单词，将概率最大的单词的概率变为索引去找单词
@@ -172,7 +191,7 @@ parallel_read = False
 if parallel_read:
     wav_max_len = np.max(Parallel(n_jobs=7)(delayed(get_wav_length)(wav) for wav in wav_files))
 else:
-    wav_max_len = 673
+    wav_max_len = 44
 print("最长的语音", wav_max_len)
 
 
@@ -195,7 +214,7 @@ number_classes = 4 # simple words
 # Classification
 tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.5)
 # net = tflearn.input_data(shape = [batch_size, wav_max_len, 20])
-net = tflearn.input_data(shape=[None, 8192])  # 8192
+net = tflearn.input_data(shape=[None, 44, 20])  # 8192
 # net = tflearn.fully_connected(net, 64)
 # net = tflearn.dropout(net, 0.5)
 net = tflearn.embedding(net, input_dim=10000, output_dim=128)
@@ -218,8 +237,8 @@ model.fit(X, Y, n_epoch=5, show_metric=True, snapshot_step=100)
 # demo_file = "5_Vicki_260.wav"
 # demo_file = "E:\\Dev\\dataSet\\google_test\\wav\\validation\\bed\\00f0204f_nohash_0.wav"
 demo_file = "E:\\Dev\\dataSet\\google_test\\wav\\validation\\happy\\0b77ee66_nohash_1.wav"
-demo = speech_data.load_wav_file(demo_file)
-result = model.predict([demo]) # Cannot feed value of shape (1, 8192) for Tensor 'InputData/X:0', which has shape '(?, 1, 673, 20)'
+demo = load_wav_feature_mfcc(demo_file)
+result = model.predict(demo) # Cannot feed value of shape (1, 8192) for Tensor 'InputData/X:0', which has shape '(?, 1, 673, 20)'
 # print(type(result[0][17]))
 print("predicted word for %s : result = %s "%(demo_file,res_to_text(result)))
 print("predicted word for %s : result = %s "%(demo_file,result))
